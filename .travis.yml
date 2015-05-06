@@ -1,18 +1,19 @@
 language: python
+os:
+   - linux
+   - osx
 python:
    - "2.7"
 before_install:
    # Get the tag if it wasn't provided. Travis doesn't provide this if it isn't a tagged build.
    - if [ -z $TRAVIS_TAG ]; then TRAVIS_TAG=`git tag --contains` ; fi
    - echo $TRAVIS_TAG
-   # Move out of git directory to build root.
+   # Remove virtual env.
    - deactivate
-   - cd ../..
-   - pwd
 install:
    # Download and configure conda.
-   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-   - bash miniconda.sh -b -p $HOME/miniconda
+   - bash ".travis_scripts/conda_download_${TRAVIS_OS_NAME}.sh"
+   - bash $HOME/miniconda.sh -b -p $HOME/miniconda
    - export PATH="$HOME/miniconda/bin:$PATH"
    - conda config --set always_yes yes
    - conda config --add channels http://conda.binstar.org/jakirkham
@@ -22,7 +23,6 @@ install:
    - conda install conda-build
    # Setup environment for nanshe and install it with all dependencies.
    - conda create -n sphinxenv python=$TRAVIS_PYTHON_VERSION
-   - cd $TRAVIS_REPO_SLUG
 script:
    # Build and install the Sphinx conda package for nanshe.
    - conda pipbuild sphinx
